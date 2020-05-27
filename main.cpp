@@ -2,6 +2,45 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <fstream>
+
+//Manages and Initializes files of a 
+// Includes iostream & fstream
+class GameFileManager {
+	std::ofstream fo; //File Out
+	std::string filename;
+
+	public:
+	GameFileManager(const std::string& _filename) :
+		fo(_filename),
+		filename(_filename)
+	{ ; }
+
+	void write(const std::string& str) {
+		if (fo.is_open())	{
+			fo << str << std::endl;
+		} else {
+			std::cout << "Unable to open: " << filename;
+		}
+	}
+	// overide function
+	void write(const std::vector<std::string>& vec) {
+		if(fo.is_open()) {
+
+			//for-range loop (better for loop)
+			for(const std::string& i : vec ){
+				fo << i << std::endl; 
+			}
+
+		} else { 
+			std::cout << "Unable to open: " << filename;
+		}
+	}
+
+	void close(){
+		fo.close();
+	}
+};
 
 class Room {
 	public:
@@ -32,14 +71,20 @@ class Room {
 
 // Contains the stats of the entity
 class Stats {
-	int hp; //health
-	int mp; //Magic Points
-	int str; //Strength
+	protected:
+		int health;
+		int magic_points;
+		int strength;
+		int defense;
+		int agility;
+		int luck; 
+		int intellegence;
 };
 
 // Keeps Desc and Stats of each species
 class Species {
-	Stats stats;	
+	protected: 
+		Stats stats;	
 //tiger //human //snake //rat //ott //croc //raccon
 	void setStats();
 
@@ -91,7 +136,20 @@ void movePlayer(Player& p, Room* dest) {
 }
 
 
+
+
 int main()  {
+	GameFileManager gfm("billyBob.txt");
+
+	//Intlizate without copy assign
+	std::vector<std::string> testvec {"a","b","c","c","c","c","c","D"};
+
+	std::cout << "Testing stuff:" << std::endl;
+	gfm.write("Hello~");
+	std::cout << "String write done" << std::endl;
+	gfm.write(testvec);
+	std::cout << "Vector write done" << std::endl;
+/*
 	std::cout << "Hello world";
 
 	Room livingroom("Living Room", "Where you live");
@@ -116,4 +174,6 @@ int main()  {
 
 
 	movePlayer(koor, &happyplace);
-};
+*/
+
+}
