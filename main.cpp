@@ -3,9 +3,20 @@
 #include <vector>
 #include <set>
 #include <fstream>
+#include <algorithm>
+#include <array>
 
 //Manages and Initializes files of a 
 // Includes iostream & fstream
+class Display{
+
+public:
+	void gameStart(){
+		std::cout << "Program start:" << std::endl;
+	};
+
+};
+// Manages the game
 class GameFileManager {
 	std::ofstream fo; //File Out
 	std::string filename;
@@ -41,7 +52,36 @@ class GameFileManager {
 		fo.close();
 	}
 };
+//Creates Item entities
+class Item {
+	// Vars
+	std::string name;
+	std::string description;
+	int id;
 
+	public:
+		Item() = default;
+
+		Item(std::string _name,std::string _description, int _id)
+			: name(_name),  
+			description(_description),
+			id(_id)
+		{ ; }
+	// Functions
+	
+	// Set||Get
+	std::string getName()	{
+		return name;
+	}
+	void setName(const std::string& _name) {
+		name = _name;	
+	}
+	// Operators
+	bool operator==(const Item& other) {
+		return name == other.name;
+	}
+};
+//Creates room entities
 class Room {
 	public:
 		std::string name;
@@ -67,8 +107,10 @@ class Room {
 			return connected_rooms.find(roomTo) != connected_rooms.end();
 		}
 };
+//Manages Battles
+class BattleManager{
 
-
+};
 // Contains the stats of the entity
 class Stats {
 	protected:
@@ -80,7 +122,11 @@ class Stats {
 		int luck; 
 		int intellegence;
 };
-
+//Directions
+struct Direction
+{
+	enum dir{north,northEast,east,southEast,south,southWest,West,northWest};
+};
 // Keeps Desc and Stats of each species
 class Species {
 	protected: 
@@ -89,24 +135,90 @@ class Species {
 	void setStats();
 
 };
-
+//Is template for character entities 
 class Character {
 	protected:
 		Species species;
 		Stats stats;
 		size_t id;
 		Room* current_room;
+
 	public:
+		//Basic
 		Character(Room* _current_room) :
 			current_room(_current_room)
 		{ ; }
 		virtual bool moveTo(Room*) = 0;
 };
+//Enemies
+class NPC : Character {
 
+};
+//Manages inventory needs <algorithm>
+class Inventory {
+
+	//Use a array instead?
+	std::vector<Item> itemList;
+	size_t bagSize;
+public:
+	Inventory(size_t& _bagSize) :
+	bagSize(_bagSize)
+	{ ; }
+
+	int sizeOfInv(){
+		return bagSize;
+	};
+
+	int numoOfItems(){
+		return itemList.size();
+	};
+
+	bool isInvFull(){
+		return itemList.size() >= bagSize;
+	};
+
+	bool addToInv(Item _item){
+		if(!isInvFull()){
+			itemList.push_back(_item);
+			std::cout << "item pushed" << std::endl;
+			return true;
+		} else {
+			std::cout << "item not pushed" << std::endl;
+			return false;
+		}
+
+	};
+	/* Vector of items
+	void addToInv(const std::vector<Item>& _items){
+	};
+	*/
+
+	bool removeFromInv(Item _item) {
+		auto it = std::find(
+			itemList.begin(),
+			itemList.end(),
+			_item
+		);
+		if (it != itemList.end()) {
+			itemList.erase(it);
+			std::cout << "item removed" << std::endl;
+			return true;
+		} else {
+			std::cout << "item failed to removes" << std::endl;
+			return false;
+		}
+	};
+};
+//Creates player entities
 class Player : public Character {
+	//vars
+	Inventory inv;
+	
+
 	public:
-		Player(Room* current_room) :
-			Character(current_room)
+		Player(Room* current_room, size_t _inv) :
+			Character(current_room),
+			inv(_inv)
 		{ ; }
 		// Tries to move player to new room
 		bool moveTo(Room* room) override {
@@ -117,16 +229,15 @@ class Player : public Character {
 				return false;	
 			}
 		}
-
-
+		void addItem(const Item& _item){
+			inv.addToInv(_item);
+		};
+};
+//Creates a storage item
+class Storage : Item{
 
 };
-
-class Item {
-	std::string description;
-};
-
-
+//Func: Moves the player through mapps
 void movePlayer(Player& p, Room* dest) {
 	if (p.moveTo(dest)) {
 		std::cout << "Moved player to " << dest->name << std::endl;
@@ -134,14 +245,43 @@ void movePlayer(Player& p, Room* dest) {
 		std::cout << "Player can't go there from here." << std::endl;
 	}
 }
-
-
-
-
+// MainGame Loop
 int main()  {
-	GameFileManager gfm("billyBob.txt");
+	//Keep this around	
+	Display gd;
+	gd.gameStart();
+	//Write Below Here
+	Room livingroom("Living Room", "Where you live");
+
+	Player koor(&livingroom, 3);
+
+	Item item_pe("Pencil Eraser", "Can Erase Pencils", 1);
+	Item item_ee("Eraser", "Eraser", 2);
+	Item item_b("bbbbbr", "b stuff", 3);
+	Item item_c("cccccc", "stuff of c", 4);
+	Item item_d("ddddd", "woah D", 5);
+
+	std::array<Item, 5> itemArr = {item_pe, item_ee, item_b, item_c, item_d};
+	
+
+	for (const auto& i : itemArr)	{
+		std::cout << "Attempt to add to koor:" << std::endl;
+		koor.addItem(i);
+	};
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	// GameFileManager gfm("billyBob.txt");
 
 	//Intlizate without copy assign
+	/*
 	std::vector<std::string> testvec {"a","b","c","c","c","c","c","D"};
 
 	std::cout << "Testing stuff:" << std::endl;
@@ -149,6 +289,7 @@ int main()  {
 	std::cout << "String write done" << std::endl;
 	gfm.write(testvec);
 	std::cout << "Vector write done" << std::endl;
+	*/
 /*
 	std::cout << "Hello world";
 
